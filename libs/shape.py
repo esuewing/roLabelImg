@@ -18,6 +18,7 @@ DEFAULT_SELECT_LINE_COLOR = QColor(255, 255, 255)
 DEFAULT_SELECT_FILL_COLOR = QColor(0, 128, 255, 155)
 DEFAULT_VERTEX_FILL_COLOR = QColor(0, 255, 0, 255)
 DEFAULT_HVERTEX_FILL_COLOR = QColor(255, 0, 0)
+CUSTOM_LINE_COLOR = QColor(45, 234, 65)
 
 
 class Shape(object):
@@ -33,6 +34,7 @@ class Shape(object):
     select_fill_color = DEFAULT_SELECT_FILL_COLOR
     vertex_fill_color = DEFAULT_VERTEX_FILL_COLOR
     hvertex_fill_color = DEFAULT_HVERTEX_FILL_COLOR
+    custom_color = CUSTOM_LINE_COLOR
     point_type = P_ROUND
     point_size = 8
     scale = 1.0
@@ -116,19 +118,26 @@ class Shape(object):
 
             line_path = QPainterPath()
             vrtx_path = QPainterPath()
+            top_line_path = QPainterPath()
 
             line_path.moveTo(self.points[0])
+            top_line_path.moveTo(self.points[0])
             # Uncommenting the following line will draw 2 paths
             # for the 1st vertex, and make it non-filled, which
             # may be desirable.
             #self.drawVertex(vrtx_path, 0)
 
             for i, p in enumerate(self.points):
-                line_path.lineTo(p)
-                # print('shape paint points (%d, %d)' % (p.x(), p.y()))
+                # tony edited
+                if i in [0, 1]:
+                    line_path.moveTo(p)
+                else:
+                    line_path.lineTo(p)
+                    # print('shape paint points (%d, %d)' % (p.x(), p.y()))
                 self.drawVertex(vrtx_path, i)
             if self.isClosed():
                 line_path.lineTo(self.points[0])
+                top_line_path.lineTo(self.points[1])
 
             # dir_path = QPainterPath()
             # tempP = self.points[0]+QPointF(10,10)
@@ -140,6 +149,13 @@ class Shape(object):
             painter.drawPath(line_path)
             painter.drawPath(vrtx_path)
             painter.fillPath(vrtx_path, self.vertex_fill_color)
+
+            # tony edited
+            pen.setWidth(max(3, int(round(4.0 / self.scale))))
+            pen.setStyle(Qt.DashLine)
+            painter.setPen(pen)
+            painter.drawPath(top_line_path)
+            #painter.fillPath(top_line_path, self.custom_color)
             if self.fill:
                 color = self.select_fill_color if self.selected else self.fill_color
                 painter.fillPath(line_path, color)
